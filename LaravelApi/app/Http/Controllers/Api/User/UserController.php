@@ -16,7 +16,10 @@ class UserController extends Controller
     {
         try{
             $user=User::all();
-            return response()->json(['success'=>true,'message'=>$user, 'total_records'=>$user->count() ,'status'=>200]);
+            if ($user->count() <= 0) {
+                return response()->json(['success' => false, 'message' => 'User not found', 'status' => 404]);
+            }
+            return response()->json(['success'=>true,'total_records'=>$user->count(),'message'=>$user ,'status'=>200]);
         }catch(\Exception $e){
             return response()->json(['success'=>false,'message'=>$e->getMessage(),'status'=>500]);
         }
@@ -52,6 +55,10 @@ class UserController extends Controller
     {
         try{
             $data=User::find($id);
+            if (!$data) {
+                return response()->json(['success' => false, 'message' => 'User not found', 'status' => 404]);
+            }
+
             return response()->json(['success'=>true,'message'=>'User fetched Successfully!','data'=>$data,'status'=>200]);
         }catch(\Exception $e){
             return response()->json(['success'=>false, 'message'=>$e->getMessage(),'status'=>500]);
@@ -65,6 +72,9 @@ class UserController extends Controller
     {
         try{
             $data=User::find($id);
+            if (!$data) {
+                return response()->json(['success' => false, 'message' => 'User not found', 'status' => 404]);
+            }
             return response()->json(['success'=>true,'message'=>'User fetched Successfully!','data'=>$data,'status'=>200]);
         }catch(\Exception $e){
             return response()->json(['success'=>false, 'message'=>$e->getMessage(),'status'=>500]);
@@ -74,23 +84,40 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UserRequest $request, string $id)
+    public function update(UserRequest $request,$id)
     {
-        try{
-            $data=$request->validated();
-            $user=User::find($id);
+        try {
+            $data = $request->validated();
+            $user = User::find($request->id);
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'User not found', 'status' => 404]);
+            }
+
             $user->update($data);
-            return response()->json(['success'=>true,'message'=>'User Updated Successfully!','data'=>$user,'status'=>200]);
-        }catch(\Exception $e){
-            return response()->json(['success'=>false, 'message'=>$e->getMessage(),'status'=>500]);
+
+            return response()->json(['success' => true, 'message' => 'User Updated Successfully!', 'status' => 200]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage(), 'status' => 500]);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            $data=User::find($id);
+            if (!$data) {
+                return response()->json(['success' => false, 'message' => 'User not found', 'status' => 404]);
+            }
+            $data->delete();
+            return response()->json(['success'=>true,'message'=>'User Deleted Successfully!','status'=>200]);
+        }catch(\Exception $e){
+            return response()->json(['success'=>false, 'message'=>$e->getMessage(),'status'=>500]);
+        }
     }
 }
